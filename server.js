@@ -3,9 +3,33 @@ const bodyParser = require('body-parser');
 const path = require('path');
 const http = require('http');
 const app = express();
-
+const mongoose = require('mongoose');
 // API file for interacting with MongoDB
 const api = require('./server/routes/api');
+
+const configDB = require('./config/database.js');
+let uristring = process.env.MONGODB_URI || configDB.url ;
+
+mongoose.connect(uristring, {useMongoClient: true}, function (err, res) {
+	if (err) {
+		console.log ('ERROR connecting to: ' + uristring + '. ' + err);
+	} else {
+		console.log ('Succeeded connected to: ' + uristring);
+	}
+});
+mongoose.connection.on('connected', function () {
+	console.log('Mongoose default connection open to ' + uristring);
+});
+
+// If the connection throws an error
+mongoose.connection.on('error',function (err) {
+	console.log('Mongoose default connection error: ' + err);
+});
+
+// When the connection is disconnected
+mongoose.connection.on('disconnected', function () {
+	console.log('Mongoose default connection disconnected');
+});
 
 // Parsers
 app.use(bodyParser.json());
